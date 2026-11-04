@@ -4,4 +4,4 @@ exports.createPayment = async (request) => {
      merchantReference: request.merchantReference,
      status: request.testStatus || 'PENDING'
    };
- };
+};
