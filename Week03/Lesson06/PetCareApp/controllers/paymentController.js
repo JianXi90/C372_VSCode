@@ -19,20 +19,9 @@ function preparePayment(req, res) {
 }
 
 async function createMockPayment(req, res) {
-  const serviceId = Number(req.params.serviceId);
-
-  // Validate testStatus
-  const allowedStatuses = ['APPROVED', 'PENDING', 'DECLINED'];
-
-  if (!req.body?.testStatus ||
-      !allowedStatuses.includes(req.body.testStatus)) {
-    return res.status(400).json({
-      error: 'Invalid or missing testStatus'
-    });
-  }
-
-  // Find service
-  const service = services.find(item => item.id === serviceId);
+function preparePayment(req, res) {
+  const serviceId = req.params.serviceId;
+  const service = services.get(serviceId);
 
   if (!service) {
     return res.status(404).json({
@@ -40,15 +29,49 @@ async function createMockPayment(req, res) {
     });
   }
 
-  const paymentRequest = {
-    amount: service.price,
+  return res.json({
+    serviceId: Number(serviceId),
+    serviceName: service.serviceName,
+    amount: service.amount,
     currency: 'sgd',
-    merchantReference: 'SERVICE-' + service.id,
-    description: service.name,
-    testStatus: req.body.testStatus
+    status: 'READY_FOR_PAYMENT'
+  });
+}
+
+async function createMockPayment(req, res) {
+  const serviceId = req.params.serviceId;
+  const service = services.get(serviceId);
+
+  if (!service) {
+    return res.status(404).json({
+      error: 'Service not found'
+    });
+  }
+
+  const allowedStatuses = [
+    'APPROVED',
+    'PENDING',
+    'DECLINED'
+  ];
+
+  const testStatus = req.body?.testStatus;
+
+  if (!allowedStatuses.includes(testStatus)) {
+    return res.status(400).json({
+      error: 'Invalid or missing testStatus'
+    });
+  }
+
+  const paymentRequest = {
+    amount: service.amount,
+    currency: 'sgd',
+    merchantReference: 'SERVICE-' + serviceId,
+    description: service.serviceName,
+    testStatus: testStatus
   };
 
-  const providerResult = await MockProvider.createPayment(paymentRequest);
+  const providerResult =
+    await MockProvider.createPayment(paymentRequest);
 
   const bookingStatusByPayment = {
     APPROVED: 'CONFIRMED',
@@ -57,7 +80,9 @@ async function createMockPayment(req, res) {
   };
 
   return res.status(200).json({
-    serviceId: service.id,
+    serviceId: Number(serviceId),
+    serviceName: service.serviceName,
+    amount: service.amount,
     providerPaymentId: providerResult.providerPaymentId,
     merchantReference: providerResult.merchantReference,
     paymentStatus: providerResult.status,
@@ -65,4 +90,8 @@ async function createMockPayment(req, res) {
   });
 }
 
+module.exports = {
+  preparePayment,
+  createMockPayment
+};
 module.exports = { preparePayment, createMockPayment };
