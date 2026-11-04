@@ -20,10 +20,24 @@ function preparePayment(req, res) {
 
 async function createMockPayment(req, res) {
   const serviceId = Number(req.params.serviceId);
+
+  // Validate testStatus
+  const allowedStatuses = ['APPROVED', 'PENDING', 'DECLINED'];
+
+  if (!req.body?.testStatus ||
+      !allowedStatuses.includes(req.body.testStatus)) {
+    return res.status(400).json({
+      error: 'Invalid or missing testStatus'
+    });
+  }
+
+  // Find service
   const service = services.find(item => item.id === serviceId);
 
   if (!service) {
-    return res.status(404).json({ error: 'Service not found' });
+    return res.status(404).json({
+      error: 'Service not found'
+    });
   }
 
   const paymentRequest = {
@@ -31,10 +45,9 @@ async function createMockPayment(req, res) {
     currency: 'sgd',
     merchantReference: 'SERVICE-' + service.id,
     description: service.name,
-    testStatus: req.body?.testStatus
+    testStatus: req.body.testStatus
   };
 
-  // call mock provider
   const providerResult = await MockProvider.createPayment(paymentRequest);
 
   const bookingStatusByPayment = {
@@ -43,7 +56,7 @@ async function createMockPayment(req, res) {
     DECLINED: 'PAYMENT_FAILED'
   };
 
-  return res.json({
+  return res.status(200).json({
     serviceId: service.id,
     providerPaymentId: providerResult.providerPaymentId,
     merchantReference: providerResult.merchantReference,
