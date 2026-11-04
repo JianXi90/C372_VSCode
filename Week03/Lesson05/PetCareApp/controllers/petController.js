@@ -1,4 +1,5 @@
 const PetModel = require('../models/petModel');
+const MockProvider = require('../services/mockPaymentProvider');
 
 function showNewPetForm(req, res) {
   res.render('newPet', { session: req.session });
