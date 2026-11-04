@@ -1,4 +1,5 @@
 const services = require('../data/mockServices');
+const MockProvider = require('../services/mockPaymentProvider');
 
 function preparePayment(req, res) {
   const serviceId = Number(req.params.serviceId);
