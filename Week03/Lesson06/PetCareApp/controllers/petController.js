@@ -1,6 +1,6 @@
-const PetModel = require('../models/petModel');
+const Pet = require('../models/petModel');
 
-function showNewPetForm(req, res) {
+function showNewPet(req, res) {
   res.render('newPet', { session: req.session });
 }
 
@@ -16,7 +16,7 @@ function createPet(req, res) {
 
   const ownerId = req.session.user.id;
 
-  PetModel.createPet({ ownerId, pet_name, species, breed, age, petImage }, (err) => {
+  Pet.createPet(ownerId, pet_name, species, breed, age, petImage, (err) => {
     if (err) {
       console.error(err);
       return res.send('Failed to add pet.');
@@ -25,7 +25,4 @@ function createPet(req, res) {
   });
 }
 
-module.exports = {
-  showNewPetForm,
-  createPet
-};
+module.exports = { showNewPet, createPet };

@@ -4,15 +4,9 @@ const flash = require('connect-flash');
 const app = express();
 const PORT = 3000;
 
-const authRoutes = require('./routes/authRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const petRoutes = require('./routes/petRoutes');
-const journalRoutes = require('./routes/journalRoutes');
-const paymentRoutes = require('./routes/paymentRoute');
-
 app.use(flash());
+
 app.set('view engine', 'ejs');
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
@@ -22,10 +16,11 @@ app.use(session({
   saveUninitialized: true
 }));
 
-app.use(authRoutes);
-app.use(adminRoutes);
-app.use(petRoutes);
-app.use(journalRoutes);
-app.use(paymentRoutes);
+app.use('/', require('./routes/homeRoutes'));
+app.use('/', require('./routes/authRoutes'));
+app.use('/', require('./routes/adminRoutes'));
+app.use('/', require('./routes/petRoutes'));
+app.use('/', require('./routes/journalRoutes'));
+app.use('/', require('./routes/paymentRoutes'));
 
 app.listen(PORT, () => console.log(`App running on http://localhost:${PORT}`));

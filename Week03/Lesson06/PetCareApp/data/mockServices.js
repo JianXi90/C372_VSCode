@@ -1,5 +1,5 @@
-module.exports = new Map([
-  ['1', { serviceName: 'Vaccination', amount: 35 }],
-  ['2', { serviceName: 'Pet Grooming', amount: 50 }],
-  ['3', { serviceName: 'Boarding', amount: 80 }]
-]);
+module.exports = [
+  { id: 1, name: 'Vaccination', price: 35 },
+  { id: 2, name: 'Pet Grooming', price: 50 },
+  { id: 3, name: 'Boarding', price: 80 }
+];

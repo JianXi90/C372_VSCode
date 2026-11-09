@@ -1,11 +1,11 @@
-const JournalModel = require('../models/journalModel');
-const PetModel = require('../models/petModel');
+const Pet = require('../models/petModel');
+const Journal = require('../models/journalModel');
 
 function listJournals(req, res) {
   const userId = req.session.user.id;
   let selectedPetId = req.query.petId;
 
-  PetModel.getPetsByOwnerId(userId, (err, pets) => {
+  Pet.getByOwner(userId, (err, pets) => {
     if (err) return res.send('Error loading pets');
 
     if (!selectedPetId && pets.length > 0) {
@@ -22,10 +22,10 @@ function listJournals(req, res) {
       });
     }
 
-    JournalModel.getJournalsForOwnerAndPet(userId, selectedPetId, (err2, journals) => {
+    Journal.getForOwnerAndPet(userId, selectedPetId, (err2, journals) => {
       if (err2) return res.send('Error loading journals');
 
-      const petInfo = pets.find((p) => p.id == selectedPetId);
+      const petInfo = pets.find(p => p.id == selectedPetId);
 
       return res.render('journals', {
         journals,
@@ -38,12 +38,13 @@ function listJournals(req, res) {
   });
 }
 
-function showNewJournalForm(req, res) {
+function showNewJournal(req, res) {
   const userId = req.session.user.id;
   const selectedPetId = req.query.petId;
 
-  JournalModel.getPetsByOwnerId(userId, (err, pets) => {
+  Pet.getByOwner(userId, (err, pets) => {
     if (err) return res.send('Error loading pets');
+
     res.render('newJournal', { pets, session: req.session, selectedPetId });
   });
 }
@@ -51,21 +52,23 @@ function showNewJournalForm(req, res) {
 function createJournal(req, res) {
   const { pet_id, activity, notes, entry_date } = req.body;
 
-  JournalModel.createJournal({ pet_id, activity, notes, entry_date }, (err) => {
+  Journal.createJournal(pet_id, activity, notes, entry_date, (err) => {
     if (err) return res.send('Error saving journal');
+
     res.redirect(`/journals?petId=${pet_id}`);
   });
 }
 
-function showEditJournalForm(req, res) {
+function showEditJournal(req, res) {
   const journalId = req.params.id;
   const userId = req.session.user.id;
 
-  JournalModel.getJournalById(journalId, (err, journalResults) => {
+  Journal.getById(journalId, (err, journalResults) => {
     if (err || journalResults.length === 0) return res.send('Journal not found');
 
-    JournalModel.getPetsByOwnerId(userId, (err2, pets) => {
+    Pet.getByOwner(userId, (err2, pets) => {
       if (err2) return res.send('Error fetching pets');
+
       res.render('editJournal', { journal: journalResults[0], pets, session: req.session });
     });
   });
@@ -75,7 +78,7 @@ function updateJournal(req, res) {
   const { entry_date, activity, notes, pet_id } = req.body;
   const journalId = req.params.id;
 
-  JournalModel.updateJournal({ entry_date, activity, notes, pet_id, journalId }, (err) => {
+  Journal.updateJournal(entry_date, activity, notes, pet_id, journalId, (err) => {
     if (err) return res.send('Error updating journal');
     res.redirect(`/journals?petId=${pet_id}`);
   });
@@ -84,13 +87,14 @@ function updateJournal(req, res) {
 function deleteJournal(req, res) {
   const journalId = req.params.id;
 
-  JournalModel.getPetIdByJournalId(journalId, (err, result) => {
+  Journal.getPetId(journalId, (err, result) => {
     if (err || result.length === 0) return res.send('Journal not found.');
 
     const petId = result[0].pet_id;
 
-    JournalModel.deleteJournalById(journalId, (err2) => {
+    Journal.deleteById(journalId, (err2) => {
       if (err2) return res.send('Error deleting journal.');
+
       res.redirect(`/journals?petId=${petId}`);
     });
   });
@@ -101,15 +105,15 @@ function searchJournals(req, res) {
   const searchQuery = `%${req.query.q}%`;
   const selectedPetId = req.query.petId;
 
-  PetModel.getPetsByOwnerId(userId, (err, pets) => {
+  Pet.getByOwner(userId, (err, pets) => {
     if (err) return res.send('Error loading pets');
 
-    JournalModel.getJournalsForSearch({ userId, searchQuery, selectedPetId }, (err2, journals) => {
+    Journal.searchForOwner(userId, searchQuery, selectedPetId, (err2, journals) => {
       if (err2) return res.send('Error searching journals');
 
       let pet = null;
       if (selectedPetId) {
-        const found = pets.find((p) => p.id.toString() === selectedPetId);
+        const found = pets.find(p => p.id.toString() === selectedPetId);
         if (found) pet = found;
       }
 
@@ -126,9 +130,9 @@ function searchJournals(req, res) {
 
 module.exports = {
   listJournals,
-  showNewJournalForm,
+  showNewJournal,
   createJournal,
-  showEditJournalForm,
+  showEditJournal,
   updateJournal,
   deleteJournal,
   searchJournals

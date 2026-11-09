@@ -1,16 +1,13 @@
 const connection = require('../config/db');
 
-function createPet({ ownerId, pet_name, species, breed, age, petImage }, cb) {
+function createPet(ownerId, name, species, breed, age, image, callback) {
   const sql = 'INSERT INTO pets (owner_id, name, species, breed, age, image) VALUES (?, ?, ?, ?, ?, ?)';
-  connection.query(sql, [ownerId, pet_name, species, breed, age, petImage], cb);
+  connection.query(sql, [ownerId, name, species, breed, age, image], callback);
 }
 
-function getPetsByOwnerId(userId, cb) {
+function getByOwner(ownerId, callback) {
   const sql = 'SELECT * FROM pets WHERE owner_id = ?';
-  connection.query(sql, [userId], cb);
+  connection.query(sql, [ownerId], callback);
 }
 
-module.exports = {
-  createPet,
-  getPetsByOwnerId
-};
+module.exports = { createPet, getByOwner };
